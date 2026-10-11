@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function mom() { return request.auth != null && request.auth.uid == 'VSkZhSJdEXOU4ByJi1f54qAcitn1'; }
+  function mom() { return request.auth != null && request.auth.uid == 'D2NsJstu47gd46TUR8mORA67CJs2'; }
   function daughter() { return request.auth != null && request.auth.uid == 'wyZFpkdVMiMQUcgOHdQrVH1YAYs2'; }
   function member() { return mom() || daughter(); }
   // Preserve the prior memo test rules; the test app continues working.
