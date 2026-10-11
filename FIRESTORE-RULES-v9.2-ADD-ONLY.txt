@@ -1,0 +1,20 @@
+현재 Firebase Rules의 function mom(), daughter(), member()는 수정하지 마세요.
+다음 match 블록을 기존 rules의 마지막 match /{document=**} 앞에 추가하세요.
+
+  match /rooms/family-sync-v9-real/records/{recordId} {
+   allow read: if member();
+   allow create: if member() && request.resource.data.keys().hasOnly(['collection','record','ownerUid'])
+    && request.resource.data.collection in ['daily','messages','transactions','categories','agreements','checks','restrictions','rewards','requests','photos','cardTypes','proposals']
+    && recordId == request.resource.data.collection + '__' + request.resource.data.record.id
+    && request.resource.data.record.updatedAt is string
+    && request.resource.data.ownerUid == request.auth.uid
+    && ((mom() && request.resource.data.record.owner == 'mom') || (daughter() && request.resource.data.record.owner == 'daughter'));
+   allow update: if member() && request.resource.data.collection == resource.data.collection
+    && request.resource.data.record.id == resource.data.record.id
+    && request.resource.data.record.updatedAt is string
+    && request.resource.data.record.updatedAt >= resource.data.record.updatedAt
+    && request.resource.data.ownerUid == request.auth.uid
+    && ((mom() && (resource.data.record.owner == 'mom' || (resource.data.collection in ['proposals','requests'] && resource.data.record.owner == 'daughter')))
+       || (daughter() && resource.data.record.owner == 'daughter'));
+   allow delete: if false;
+  }
