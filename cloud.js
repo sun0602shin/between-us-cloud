@@ -23,7 +23,15 @@ async function sync(){if(busy)return;if(!user||!store){status('먼저 Firebase �
        if(rec.owner===role || (role==='mom'&&c==='proposals'&&rec.decidedBy==='mom'))toUpload.push({key,c,rec,mode:'create'});
      }else if(r.collection===c && r.record?.id===rec.id){
        if(rec.updatedAt>r.record.updatedAt){
-         if(rec.owner===role || (role==='mom'&&(['proposals','requests'].includes(c))&&rec.decidedBy==='mom'))toUpload.push({key,c,rec,mode:'update'});
+         // A mother's approval, rejection or usage completion must sync even for
+         // request documents created on the daughter's phone. Earlier versions
+         // did not save decidedBy; also migrate those already-edited requests.
+         const motherRequestDecision=role==='mom' && c==='requests' && rec.owner==='daughter'
+           && ['approved','used','cancelled'].includes(rec.status);
+         if(rec.owner===role || (role==='mom'&&c==='proposals'&&rec.decidedBy==='mom') || motherRequestDecision){
+           const uploadRec=motherRequestDecision ? {...rec,decidedBy:'mom',decidedAt:rec.decidedAt||rec.updatedAt} : rec;
+           toUpload.push({key,c,rec:uploadRec,mode:'update'});
+         }
          else conflicts++;
        }else if(r.record.updatedAt>rec.updatedAt){toDownload.push({c,rec:r.record})}
      }
