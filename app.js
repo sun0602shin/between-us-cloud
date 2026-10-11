@@ -84,7 +84,7 @@ function requestAction(id,status){
  closeAllModals();
  // If validation prevented a change, keep details accessible from the list.
 }
-function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
+function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3.1 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
 
 function go(t){closeAllModals();tab=t;render();window.scrollTo(0,0)}
 function changeRole(){modal('사용자 선택',`<p class="muted">이 설정은 해당 아이폰에서 사용하는 사람을 구분해요. 비밀번호나 계정 인증은 제공하지 않아요.</p><div class="grid2">${btn('👩 엄마','secondary',`onclick="setRole('mom')"`)}${btn('👧 딸','secondary',`onclick="setRole('daughter')"`)}</div>`)}
@@ -156,7 +156,7 @@ function editTransaction(id){
  const r=valid('restrictions').find(t=>t.transactionId===id&&t.status!=='cancelled');
  const isMinus=Number(x.amount)<0;
  const start=r?.start||x.date||today(),end=r?.end||start;
- const fields=`${field('날짜','date','date',x.date,true)}${select('카테고리','categoryId',optionRows(valid('categories'),x.categoryId))}${select('연결 항목명','agreementId','<option value="">직접 입력</option>'+valid('agreements').map(z=>`<option value="${esc(z.id)}" ${x.agreementId===z.id?'selected':''}>${esc(z.title)}</option>`).join(''))}${field('항목명 (직접 입력 가능)','agreementName','text',x.agreementName||'',false)}${field('적용 포인트 (상점 양수, 벌점 음수)','amount','number',x.amount,true)}${textarea('구체적인 사유','reason',x.reason,true)}`;
+ const fields=`${field('날짜','date','date',x.date,true)}${select('카테고리','categoryId',optionRows(valid('categories'),x.categoryId))}${select('항목명','agreementId','<option value="">직접 입력</option>'+valid('agreements').map(z=>`<option value="${esc(z.id)}" ${x.agreementId===z.id?'selected':''}>${esc(z.title)}</option>`).join(''))}<div id="customAgreementNameWrap" ${x.agreementId?'hidden':''}>${field('새 항목명','agreementName','text',x.agreementName||'',false)}</div>${field('적용 포인트 (상점 양수, 벌점 음수)','amount','number',x.amount,true)}${textarea('구체적인 사유','reason',x.reason,true)}`;
  const period=isMinus?`<label class="checkrow"><input type="checkbox" id="editRestrictionToggle" ${r?'checked':''}> 기간 제한 적용</label><div id="editRestrictionGroup" ${r?'':'hidden'}>${field('제한 내용','restrictionTitle','text',r?.title||x.agreementName||'사용 제한')}<div class="periodDates periodDatesV8">${field('제한 시작일','start','date',start)}${field('제한 종료일','end','date',end)}</div></div>`:'';
  form(fields+period,v=>{
   if(!momOnly())return false;
@@ -171,6 +171,13 @@ function editTransaction(id){
   }else if(enabled){add('restrictions',{transactionId:id,agreementId:x.agreementId||null,...restricted,status:'active',reason:v.reason.trim(),editedBy:role});}
   const agreement=valid('agreements').find(z=>z.id===v.agreementId);update('transactions',id,{date:v.date,amount:Number(v.amount),reason:v.reason.trim(),categoryId:v.categoryId,categoryName:cat(v.categoryId)?.name||'기타',agreementId:v.agreementId||'',agreementName:agreement?.title||v.agreementName||'',editedBy:role});
  });
+ const agreementSelect=document.querySelector('#modalRoot [name="agreementId"]');
+ const customWrap=document.querySelector('#customAgreementNameWrap');
+ if(agreementSelect&&customWrap){
+  const refreshCustom=()=>{customWrap.hidden=!!agreementSelect.value};
+  agreementSelect.addEventListener('change',refreshCustom);
+  refreshCustom();
+ }
  const toggle=document.querySelector('#editRestrictionToggle');if(toggle)toggle.addEventListener('change',()=>{document.querySelector('#editRestrictionGroup').hidden=!toggle.checked});
 }
 
