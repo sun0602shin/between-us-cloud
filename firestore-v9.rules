@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
   function mom() { return request.auth != null && request.auth.uid == 'D2NsJstu47gd46TUR8mORA67CJs2'; }
-  function daughter() { return request.auth != null && request.auth.uid == 'wyZFpkdVMiMQUcgOHdQrVH1YAYs2'; }
+  function daughter() { return request.auth != null && request.auth.uid == 'AOn7VDK1MRd1PS72yludo1a23753'; }
   function member() { return mom() || daughter(); }
   // Preserve the prior memo test rules; the test app continues working.
   match /rooms/family-sync-test/notes/{noteId} {
