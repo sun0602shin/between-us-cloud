@@ -84,7 +84,7 @@ function requestAction(id,status){
  closeAllModals();
  // If validation prevented a change, keep details accessible from the list.
 }
-function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3.1 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
+function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3.2 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
 
 function go(t){closeAllModals();tab=t;render();window.scrollTo(0,0)}
 function changeRole(){modal('사용자 선택',`<p class="muted">이 설정은 해당 아이폰에서 사용하는 사람을 구분해요. 비밀번호나 계정 인증은 제공하지 않아요.</p><div class="grid2">${btn('👩 엄마','secondary',`onclick="setRole('mom')"`)}${btn('👧 딸','secondary',`onclick="setRole('daughter')"`)}</div>`)}
@@ -130,7 +130,7 @@ function openPoint(initialType='plus',draft=null){
  ${field('날짜','date','date',draft?.date||selected||today(),true)}
  <div class="field"><label>항목 찾기</label><div class="choicebar"><button type="button" class="choice active" id="plusChoice">＋ 상점</button><button type="button" class="choice" id="minusChoice">－ 벌점</button></div><input type="hidden" name="type" value="plus"></div>
  ${select('카테고리','categoryId',optionRows(cats))}
- <div class="field"><label>항목 선택 (여러 개 가능)</label><div id="pointChoices"></div></div>
+ <div class="field"><label id="pointChoicesLabel">해당 카테고리의 항목 (여러 개 선택 가능)</label><div id="pointChoices"></div></div>
  <div id="newRuleLink"></div>
  <div class="notice">카테고리나 상점·벌점을 바꿔도 선택한 항목은 유지돼요. 항목별로 포인트와 사유를 수정할 수 있어요.</div>
  <div id="pointSelected"></div>
@@ -138,7 +138,7 @@ function openPoint(initialType='plus',draft=null){
  const f=$('#pointForm'),el=n=>f.elements.namedItem(n);
  const key=(type,id)=>type+'::'+id;
  const label=a=>[a.title,a.content||a.description,a.criterion].filter(Boolean).join(' · ');
- const choiceFor=(type,categoryId)=>valid('agreements').filter(a=>a.categoryId===categoryId&&(a.kind||'promise')===(type==='plus'?'praise':'promise')&&a.status!=='archived');
+ const choiceFor=(type,categoryId)=>valid('agreements').filter(a=>a.categoryId===categoryId&&a.status!=='archived'&&(type==='plus'||(a.kind||'promise')==='promise'));
  function capture(){
   f.querySelectorAll('[data-point-card]').forEach(card=>{
    const p=picked.get(card.dataset.key);if(!p)return;
@@ -171,9 +171,10 @@ function openPoint(initialType='plus',draft=null){
  function refreshChoices(){
   const type=el('type').value,categoryId=el('categoryId').value;
   const rows=choiceFor(type,categoryId);
+  $('#pointChoicesLabel').textContent=`${cat(categoryId)?.name||'선택한 카테고리'} · ${type==='plus'?'약속 + 칭찬':'약속'} 항목 (${rows.length}개)`;
   $('#pointChoices').innerHTML=rows.map(a=>`<label class="checkrow" style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid #ddd">
    <input type="checkbox" data-pick="${esc(a.id)}" ${picked.has(key(type,a.id))?'checked':''}>
-   <span><strong>${esc(a.title||'이름 없음')}</strong>${a.content||a.description||a.criterion?`<small class="muted" style="display:block">${esc([a.content||a.description,a.criterion].filter(Boolean).join(' · '))}</small>`:''}</span>
+   <span><strong>${esc(a.title||'이름 없음')}</strong> <small class="muted">[${(a.kind||'promise')==='praise'?'칭찬':'약속'}]</small>${a.content||a.description||a.criterion?`<small class="muted" style="display:block">${esc([a.content||a.description,a.criterion].filter(Boolean).join(' · '))}</small>`:''}</span>
    </label>`).join('')||'<p class="muted">이 카테고리에 등록된 항목이 없어요.</p>';
   $('#pointChoices').querySelectorAll('[data-pick]').forEach(input=>input.onchange=()=>{
    capture();const a=valid('agreements').find(x=>x.id===input.dataset.pick);if(!a)return;
