@@ -84,7 +84,7 @@ function requestAction(id,status){
  closeAllModals();
  // If validation prevented a change, keep details accessible from the list.
 }
-function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3.2 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
+function render(){let x=$('#app');if(!x)return;x.innerHTML=`<header class="head"><button class="brand brandButton" onclick="go('daily')" aria-label="달력 홈으로"><img src="icon-192.png" alt="우리 사이"><span><strong>우리 사이</strong><span class="sub">Between Us · v9.3.3 실제 기록</span></span></button><div class="headright"><strong class="balance">⭐ ${balance()}P</strong><button class="secondary roleButton" onclick="changeRole()">${role==='mom'?'👩 엄마':'👧 딸'} ▾</button></div></header><div class="syncQuick"><div class="syncQuickText"><strong>☁️ 서버 동기화</strong><small id="syncQuickStatus">${esc(localStorage.getItem('bu_v92_lastSync')||'수동으로 기록 전송·가져오기')}</small></div><button class="primary" onclick="quickCloudSync()">↻ 동기화</button></div>${tab==='daily'?rewardRequestAlert():''}`+({daily:calendarView,feelings:feelingsView,points:pointsView,agreements:agreementsView,rewards:rewardsView,more:moreView})[tab]();$('#tabs').innerHTML=sections.map((t,i)=>`<button class="${tab===t?'active':''}" onclick="go('${t}')"><span>${emojis[i]}</span>${labels[i]}</button>`).join('');window.v9cloud?.refreshPanel?.()}
 
 function go(t){closeAllModals();tab=t;render();window.scrollTo(0,0)}
 function changeRole(){modal('사용자 선택',`<p class="muted">이 설정은 해당 아이폰에서 사용하는 사람을 구분해요. 비밀번호나 계정 인증은 제공하지 않아요.</p><div class="grid2">${btn('👩 엄마','secondary',`onclick="setRole('mom')"`)}${btn('👧 딸','secondary',`onclick="setRole('daughter')"`)}</div>`)}
@@ -98,7 +98,7 @@ function myDaily(d,who=role){return valid('daily').find(x=>x.date===d&&x.owner==
 function restrictionOn(d){return valid('restrictions').filter(x=>x.start<=d&&x.end>=d&&x.status!=='cancelled'&&(!x.releasedAt||d<x.releasedAt))}
 function calendarView(){let [y,m]=month.split('-').map(Number),first=new Date(y,m-1,1).getDay(),count=new Date(y,m,0).getDate();let cells='';for(let i=0;i<Math.ceil((first+count)/7)*7;i++){let day=i-first+1;if(day<1||day>count){cells+='<div class="day empty"></div>';continue}let dt=month+'-'+String(day).padStart(2,'0'),own=myDaily(dt),peer=myDaily(dt,other()),tx=valid('transactions').filter(x=>x.date===dt),rest=restrictionOn(dt);cells+=`<button class="day ${dt===selected?'active':''} ${rest.length?'restricted':''}" onclick="chooseDay('${dt}')"><span class="num">${day}</span><span class="em">${own?.mood||peer?.mood||''}</span>${tx.length?`<span class="marker">${tx.reduce((a,b)=>a+Number(b.amount),0)>0?'+':''}${tx.reduce((a,b)=>a+Number(b.amount),0)}P</span>`:''}${rest.length?'<span class="bar">🔒 제한</span>':''}</button>`}
 let checksToday=valid('checks').filter(x=>x.date===selected),items=valid('transactions').filter(x=>x.date===selected),daily=valid('daily').filter(x=>x.date===selected&&(x.owner===role||x.visibility==='shared')),msgs=valid('messages').filter(x=>x.date===selected&&(x.owner===role||x.visibility==='shared'));
-return `<div class="calendarQuick"><button onclick="${role==='mom'?'openPoint()':"go(\'agreements\')"}">⭐ ${role==='mom'?'상점·벌점':'약속 제안'}</button><button onclick="openMessage()">💌 마음 카드</button><button onclick="openDaily()">💗 오늘 마음</button></div><div class="card"><div class="titleline"><h2>우리의 달력</h2><span class="pill">${balance()} P</span></div><div class="row between mb"><button class="tiny" onclick="moveMonth(-1)">‹ 이전</button><strong>${y}년 ${m}월</strong><button class="tiny" onclick="moveMonth(1)">다음 ›</button></div><div class="week">${['일','월','화','수','목','금','토'].map(x=>`<div class="weekday">${x}</div>`).join('')}${cells}</div><div class="muted mt">😊 감정　±P 포인트　🔒 제한</div></div><div class="card shareShortcut"><div class="titleline"><h2>☁️ 내 기록 공유하기</h2><span class="pill">${role==='mom'?'mom/mom.json':'daughter/daughter.json'}</span></div><p class="muted">전체 공개 기록을 iCloud Drive의 지정된 폴더에 저장해요. 마지막 공유: ${esc(state.lastExport||'없음')}</p><div class="shareButtons"><button class="primary" onclick="exportData(false,'icloud')">☁️ iCloud 저장</button><button class="secondary" onclick="exportData(false,'airdrop')">📤 AirDrop 보내기</button></div><button class="secondary full mt" onclick="pickImport()">📥 상대방 기록 가져오기</button></div><div class="card" id="daySummary"><div class="titleline"><h2>${formatDate(selected)}의 기록</h2>${btn('＋ 마음 기록','secondary','onclick="openDaily()"')}</div>${daily.length?daily.map(x=>`<div class="bubble">${x.mood} <strong>${x.owner==='mom'?'엄마':'딸'}</strong> · ${esc(x.relation||'')}${x.visibility==='private'?' 🔐':''}<p>${esc(x.note)}</p></div>`).join(''):'<div class="emptymsg">아직 감정 기록이 없어요.</div>'}${activityRows(selected)}${restrictionOn(selected).map(x=>`<div class="notice">🔒 ${esc(x.title)} (${x.start} ~ ${x.end})</div>`).join('')}${msgs.slice(0,3).map(x=>`<div class="bubble">💌 ${esc(x.type)} · ${x.owner==='mom'?'엄마':'딸'}<p>${esc(x.text)}</p></div>`).join('')}${msgs.length>3?`<button class="secondary full" onclick="openDayAll('messages')">마음 카드 전체 보기 (${msgs.length})</button>`:''}<div class="dayActions"><button class="secondary" onclick="openDaily()">💗 마음 기록</button><button class="secondary" onclick="openMessage()">💌 마음 카드</button><button class="secondary" onclick="${role==='mom'?'openPoint()':'go(\'agreements\')'}">⭐ 상·벌점</button></div></div>`}
+return `<div class="calendarQuick"><button onclick="${role==='mom'?'openPoint()':"go(\'agreements\')"}">⭐ ${role==='mom'?'상점·벌점':'약속 제안'}</button><button onclick="openMessage()">💌 마음 카드</button><button onclick="openDaily()">💗 오늘 마음</button></div><div class="card"><div class="titleline"><h2>우리의 달력</h2><span class="pill">${balance()} P</span></div><div class="row between mb"><button class="tiny" onclick="moveMonth(-1)">‹ 이전</button><strong>${y}년 ${m}월</strong><button class="tiny" onclick="moveMonth(1)">다음 ›</button></div><div class="week">${['일','월','화','수','목','금','토'].map(x=>`<div class="weekday">${x}</div>`).join('')}${cells}</div><div class="muted mt">😊 감정　±P 포인트　🔒 제한</div></div><div class="card" id="daySummary"><div class="titleline"><h2>${formatDate(selected)}의 기록</h2>${btn('＋ 마음 기록','secondary','onclick="openDaily()"')}</div>${daily.length?daily.map(x=>`<div class="bubble">${x.mood} <strong>${x.owner==='mom'?'엄마':'딸'}</strong> · ${esc(x.relation||'')}${x.visibility==='private'?' 🔐':''}<p>${esc(x.note)}</p></div>`).join(''):'<div class="emptymsg">아직 감정 기록이 없어요.</div>'}${activityRows(selected)}${restrictionOn(selected).map(x=>`<div class="notice">🔒 ${esc(x.title)} (${x.start} ~ ${x.end})</div>`).join('')}${msgs.slice(0,3).map(x=>`<div class="bubble">💌 ${esc(x.type)} · ${x.owner==='mom'?'엄마':'딸'}<p>${esc(x.text)}</p></div>`).join('')}${msgs.length>3?`<button class="secondary full" onclick="openDayAll('messages')">마음 카드 전체 보기 (${msgs.length})</button>`:''}<div class="dayActions"><button class="secondary" onclick="openDaily()">💗 마음 기록</button><button class="secondary" onclick="openMessage()">💌 마음 카드</button><button class="secondary" onclick="${role==='mom'?'openPoint()':'go(\'agreements\')'}">⭐ 상·벌점</button></div></div>`}
 function activityRows(date){
  const txs=valid('transactions').filter(x=>x.date===date);
  const checks=valid('checks').filter(x=>x.date===date);
@@ -125,20 +125,20 @@ function pointsView(){let filter=listFilter.points,m=listMonth.points;let all=va
 function openPoint(initialType='plus',draft=null){
  if(!momOnly())return;
  const cats=valid('categories');if(!cats.length)return openCategoryList();
- const picked=new Map();
- modal('상점 / 벌점 일괄 등록',`<form id="pointForm">
- ${field('날짜','date','date',draft?.date||selected||today(),true)}
- <div class="field"><label>항목 찾기</label><div class="choicebar"><button type="button" class="choice active" id="plusChoice">＋ 상점</button><button type="button" class="choice" id="minusChoice">－ 벌점</button></div><input type="hidden" name="type" value="plus"></div>
+ const picked=new Map();let expanded=null;
+ modal('상점 / 벌점 일괄 등록',`<form id="pointForm" style="display:flex;flex-direction:column;gap:10px">
+ <div class="field" style="margin:0">${field('날짜','date','date',draft?.date||selected||today(),true)}</div>
+ <div class="choicebar" style="margin:0"><button type="button" class="choice active" id="plusChoice">＋ 상점</button><button type="button" class="choice" id="minusChoice">－ 벌점</button></div><input type="hidden" name="type" value="plus">
  ${select('카테고리','categoryId',optionRows(cats))}
- <div class="field"><label id="pointChoicesLabel">해당 카테고리의 항목 (여러 개 선택 가능)</label><div id="pointChoices"></div></div>
+ <div><div class="row between"><strong id="pointChoicesLabel">카테고리 항목</strong><small class="muted" id="pointCount"></small></div><div id="pointChoices"></div></div>
  <div id="newRuleLink"></div>
- <div class="notice">카테고리나 상점·벌점을 바꿔도 선택한 항목은 유지돼요. 항목별로 포인트와 사유를 수정할 수 있어요.</div>
  <div id="pointSelected"></div>
- <button class="primary full" id="pointSave" type="submit">선택한 항목 저장</button></form>`);
+ <div id="pointFooter" style="position:sticky;bottom:0;z-index:5;background:var(--page-bg,#fff);padding:10px 0 max(10px,env(safe-area-inset-bottom));border-top:1px solid #ddd;box-shadow:0 -6px 12px rgba(0,0,0,.05)"><div class="row between" style="margin-bottom:8px"><strong id="pointSummary">선택 0건</strong><strong id="pointTotal">0P</strong></div><button class="primary full" id="pointSave" type="submit">항목을 선택해 주세요</button></div>
+ </form>`);
  const f=$('#pointForm'),el=n=>f.elements.namedItem(n);
  const key=(type,id)=>type+'::'+id;
- const label=a=>[a.title,a.content||a.description,a.criterion].filter(Boolean).join(' · ');
  const choiceFor=(type,categoryId)=>valid('agreements').filter(a=>a.categoryId===categoryId&&a.status!=='archived'&&(type==='plus'||(a.kind||'promise')==='promise'));
+ const pointValue=p=>Number(p.amount)||0;
  function capture(){
   f.querySelectorAll('[data-point-card]').forEach(card=>{
    const p=picked.get(card.dataset.key);if(!p)return;
@@ -151,85 +151,81 @@ function openPoint(initialType='plus',draft=null){
    }
   });
  }
+ function updateSummary(){
+  const rows=[...picked.values()];const total=rows.reduce((n,p)=>n+(p.type==='minus'?-pointValue(p):pointValue(p)),0);
+  $('#pointSummary').textContent=`선택 ${rows.length}건`;
+  $('#pointTotal').textContent=`${total>0?'+':''}${total}P`;
+  $('#pointCount').textContent=`총 ${rows.length}개 선택`;
+  $('#pointSave').textContent=rows.length?`${rows.length}개 항목 일괄 저장`:'항목을 선택해 주세요';
+  $('#pointSave').disabled=!rows.length;
+ }
  function selectedRender(){
   const rows=[...picked.values()];
-  $('#pointSave').textContent=`${rows.length}개 항목 저장`;
-  $('#pointSelected').innerHTML=rows.length?`<h3>선택한 항목 (${rows.length})</h3>`+rows.map(p=>{
-   const a=valid('agreements').find(x=>x.id===p.id),minus=p.type==='minus';
-   return `<div class="referencebox" data-point-card data-key="${esc(key(p.type,p.id))}">
-    <div class="row between"><strong>${minus?'－ 벌점':'＋ 상점'} · ${esc(a?.title||p.title)}</strong><button class="tiny" type="button" data-remove="${esc(key(p.type,p.id))}">제외</button></div>
-    <small class="muted">${esc(cat(p.categoryId)?.name||'기타')} · ${esc(a?.content||a?.description||'')}${a?.criterion?' · 기준: '+esc(a.criterion):''}</small>
-    <div class="field"><label>${minus?'벌점':'상점'} 포인트</label><input type="number" min="0" step="1" data-amount value="${esc(p.amount)}" required></div>
-    <div class="field"><label>사유 (${minus?'필수':'선택'})</label><textarea data-reason ${minus?'required':''}>${esc(p.reason)}</textarea></div>
-    ${minus?`<div class="periodgroup"><label class="checkrow"><input type="checkbox" data-restrict ${p.restrict?'checked':''}> 기간 제한 적용</label>
-    <div class="field"><label>제한 기간 (일)</label><input type="number" min="1" data-days value="${esc(p.days)}"></div>
-    <div class="field"><label>제한 내용</label><input type="text" data-title value="${esc(p.restrictionTitle)}"></div></div>`:''}
+  $('#pointSelected').innerHTML=rows.length?`<div class="row between" style="margin:8px 0"><strong>선택한 항목 (${rows.length})</strong><small class="muted">✎ 수정 시 상세 입력</small></div>`+rows.map(p=>{
+   const a=valid('agreements').find(x=>x.id===p.id),minus=p.type==='minus',k=key(p.type,p.id),isOpen=expanded===k;
+   return `<div data-point-row="${esc(k)}" style="border-bottom:1px solid #ddd;padding:8px 0">
+    <div class="row" style="display:flex;align-items:center;gap:8px"><span style="flex:1;min-width:0"><strong style="font-size:14px">${esc(a?.title||p.title)}</strong><small class="muted" style="display:block">${minus?'－ 벌점':'＋ 상점'} · ${esc(cat(p.categoryId)?.name||'기타')}</small></span><strong data-point-value style="white-space:nowrap">${minus?'−':'+'}${esc(p.amount)}P</strong><button type="button" class="tiny" data-edit="${esc(k)}" aria-label="${esc(p.title)} 수정">${isOpen?'접기':'✎'}</button><button type="button" class="tiny" data-remove="${esc(k)}">×</button></div>
+    ${isOpen?`<div data-point-card data-key="${esc(k)}" style="padding:10px 0 4px">
+      <div class="field"><label>${minus?'벌점':'상점'} 포인트</label><input type="number" min="0" step="1" data-amount value="${esc(p.amount)}" required></div>
+      <div class="field"><label>사유 (${minus?'필수':'선택'})</label><textarea data-reason ${minus?'required':''}>${esc(p.reason)}</textarea></div>
+      ${minus?`<label class="checkrow"><input type="checkbox" data-restrict ${p.restrict?'checked':''}> 기간 제한 적용</label><div class="field"><label>제한 기간 (일)</label><input type="number" min="1" data-days value="${esc(p.days)}"></div><div class="field"><label>제한 내용</label><input type="text" data-title value="${esc(p.restrictionTitle)}"></div>`:''}
+    </div>`:''}
    </div>`;
-  }).join(''):'<p class="muted">아래 목록에서 항목을 선택해 주세요.</p>';
-  f.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{capture();picked.delete(b.dataset.remove);refreshChoices();selectedRender()});
+  }).join(''):'<p class="muted" style="margin:8px 0">위 목록에서 여러 항목을 선택해 주세요.</p>';
+  f.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{capture();expanded=expanded===b.dataset.edit?null:b.dataset.edit;selectedRender()});
+  f.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{capture();picked.delete(b.dataset.remove);if(expanded===b.dataset.remove)expanded=null;refreshChoices();selectedRender()});
+  f.querySelectorAll('[data-amount]').forEach(input=>input.oninput=()=>{capture();const p=picked.get(input.closest('[data-point-card]').dataset.key);input.closest('[data-point-row]').querySelector('[data-point-value]').textContent=`${p.type==='minus'?'−':'+'}${p.amount}P`;updateSummary()});
+  updateSummary();
  }
  function refreshChoices(){
-  const type=el('type').value,categoryId=el('categoryId').value;
-  const rows=choiceFor(type,categoryId);
-  $('#pointChoicesLabel').textContent=`${cat(categoryId)?.name||'선택한 카테고리'} · ${type==='plus'?'약속 + 칭찬':'약속'} 항목 (${rows.length}개)`;
-  $('#pointChoices').innerHTML=rows.map(a=>`<label class="checkrow" style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid #ddd">
-   <input type="checkbox" data-pick="${esc(a.id)}" ${picked.has(key(type,a.id))?'checked':''}>
-   <span><strong>${esc(a.title||'이름 없음')}</strong> <small class="muted">[${(a.kind||'promise')==='praise'?'칭찬':'약속'}]</small>${a.content||a.description||a.criterion?`<small class="muted" style="display:block">${esc([a.content||a.description,a.criterion].filter(Boolean).join(' · '))}</small>`:''}</span>
-   </label>`).join('')||'<p class="muted">이 카테고리에 등록된 항목이 없어요.</p>';
+  const type=el('type').value,categoryId=el('categoryId').value,rows=choiceFor(type,categoryId);
+  $('#pointChoicesLabel').textContent=`${cat(categoryId)?.name||'선택한 카테고리'} · ${type==='plus'?'약속 + 칭찬':'약속'} (${rows.length})`;
+  $('#pointChoices').innerHTML=rows.map(a=>`<label class="checkrow" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #ddd;margin:0"><input type="checkbox" data-pick="${esc(a.id)}" ${picked.has(key(type,a.id))?'checked':''}><span style="flex:1;min-width:0;font-size:14px"><strong>${esc(a.title||'이름 없음')}</strong> <small class="muted">${(a.kind||'promise')==='praise'?'칭찬':'약속'}</small></span><small style="white-space:nowrap">${type==='minus'?'−':'+'}${esc(type==='minus'?a.penalty??cat(a.categoryId)?.penalty??0:a.reward??cat(a.categoryId)?.reward??0)}P</small></label>`).join('')||'<p class="muted">이 카테고리에 등록된 항목이 없어요.</p>';
   $('#pointChoices').querySelectorAll('[data-pick]').forEach(input=>input.onchange=()=>{
    capture();const a=valid('agreements').find(x=>x.id===input.dataset.pick);if(!a)return;
    const k=key(type,a.id);
    if(input.checked)picked.set(k,{id:a.id,type,categoryId:a.categoryId,title:a.title,amount:String(type==='minus'?a.penalty??cat(a.categoryId)?.penalty??0:a.reward??cat(a.categoryId)?.reward??0),reason:'',restrict:type==='minus'&&Number(a.days)>0,days:String(a.days||0),restrictionTitle:a.restrictionTitle||a.title||''});
    else picked.delete(k);
+   if(!picked.has(expanded))expanded=null;
    selectedRender();
   });
   const kind=type==='plus'?'praise':'promise';
   $('#newRuleLink').innerHTML=`<button class="secondary full" type="button" id="addRuleInline">＋ 새 ${type==='plus'?'칭찬':'약속'} 항목 등록</button>`;
   $('#addRuleInline').onclick=()=>{
-   capture();
-   editAgreement(null,{kind,categoryId});
-   // Nested modal returns to this form; refresh choices after the child dialog closes.
+   capture();editAgreement(null,{kind,categoryId});
    const root=$('#modalRoot');
-   const observer=new MutationObserver(()=>{
-    if(root.querySelector('#pointForm')===f){observer.disconnect();refreshChoices();selectedRender()}
-   });
+   const observer=new MutationObserver(()=>{if(root.querySelector('#pointForm')===f){observer.disconnect();refreshChoices();selectedRender()}});
    observer.observe(root,{childList:true});
   };
+  updateSummary();
  }
- function switchType(type){
-  capture();el('type').value=type;
-  $('#plusChoice').classList.toggle('active',type==='plus');
-  $('#minusChoice').classList.toggle('active',type==='minus');
-  refreshChoices();
- }
- $('#plusChoice').onclick=()=>switchType('plus');
- $('#minusChoice').onclick=()=>switchType('minus');
+ function switchType(type){capture();el('type').value=type;$('#plusChoice').classList.toggle('active',type==='plus');$('#minusChoice').classList.toggle('active',type==='minus');refreshChoices()}
+ $('#plusChoice').onclick=()=>switchType('plus');$('#minusChoice').onclick=()=>switchType('minus');
  el('categoryId').onchange=()=>{capture();refreshChoices()};
- switchType(initialType==='minus'?'minus':'plus');
+ switchType(initialType==='minus'?'minus':'plus');selectedRender();
  f.onsubmit=e=>{
   e.preventDefault();if(!momOnly())return;capture();
   const date=el('date').value,rows=[...picked.values()];
   if(!date||!rows.length)return alert('날짜와 항목을 선택해 주세요.');
   for(const p of rows){
-   const n=Number(p.amount);
-   if(!Number.isFinite(n)||n<0||!Number.isInteger(n))return alert('포인트는 0 이상의 정수로 입력해 주세요.');
-   if(p.type==='minus'&&!p.reason.trim())return alert('벌점 항목은 사유를 입력해야 해요.');
-   if(p.type==='minus'&&p.restrict&&(!Number.isInteger(Number(p.days))||Number(p.days)<1||!p.restrictionTitle.trim()))return alert('기간 제한의 일수와 내용을 확인해 주세요.');
+   const n=Number(p.amount);let error='';
+   if(!Number.isFinite(n)||n<0||!Number.isInteger(n))error='포인트는 0 이상의 정수로 입력해 주세요.';
+   else if(p.type==='minus'&&!p.reason.trim())error='벌점 항목은 사유를 입력해야 해요.';
+   else if(p.type==='minus'&&p.restrict&&(!Number.isInteger(Number(p.days))||Number(p.days)<1||!p.restrictionTitle.trim()))error='기간 제한의 일수와 내용을 확인해 주세요.';
+   if(error){expanded=key(p.type,p.id);selectedRender();f.querySelector('[data-point-card]')?.scrollIntoView({behavior:'smooth',block:'center'});return alert(`${p.title}: ${error}`)}
   }
   const duplicates=rows.filter(p=>valid('transactions').some(t=>t.date===date&&t.agreementId===p.id&&t.categoryId===p.categoryId&&(Number(t.amount)<0?'minus':'plus')===p.type));
   if(duplicates.length&&!confirm(`${date}에 이미 기록된 항목 ${duplicates.length}개가 있어요:\n${duplicates.map(p=>'• '+p.title).join('\n')}\n\n그래도 추가 저장할까요?`))return;
   if(!confirm(`${date}에 상·벌점 ${rows.length}건을 저장할까요?`))return;
-  const saveButton=$('#pointSave');saveButton.disabled=true;
+  $('#pointSave').disabled=true;
   for(const p of rows){
-   const a=valid('agreements').find(x=>x.id===p.id);
-   const reason=p.reason.trim();
+   const a=valid('agreements').find(x=>x.id===p.id),reason=p.reason.trim();
    const t=add('transactions',{date,categoryId:p.categoryId,categoryName:cat(p.categoryId)?.name||'기타',agreementId:p.id,agreementName:a?.title||p.title,itemContent:a?.content||a?.description||'',itemCriterion:a?.criterion||'',reason,amount:p.type==='minus'?-Number(p.amount):Number(p.amount)});
    if(p.type==='minus'&&p.restrict)add('restrictions',{transactionId:t.id,agreementId:p.id,title:p.restrictionTitle.trim(),reason,start:date,end:datePlus(date,Number(p.days)-1),status:'active'});
   }
   selected=date;closeModal();
  };
 }
-
 function editTransaction(id){
  if(!momOnly())return;
  const x=valid('transactions').find(t=>t.id===id);if(!x)return;
